@@ -4,7 +4,7 @@
 
 # An end-to-end data analytics project that investigates whether a statistically significant, unexplained gender pay gap exists within an organization, after controlling for legitimate business factors such as role, department, education, age, and seniority.
 
-# 
+#  
 
 # \## The Problem
 
