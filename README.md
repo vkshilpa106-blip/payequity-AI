@@ -1,198 +1,144 @@
-# \# PayEquity AI — Compensation Gap Intelligence Platform
+# PayEquity AI
+### Compensation Gap Analysis for HR Decision-Making
 
-# 
+A data analytics project that investigates whether a company's gender pay gap comes from unequal pay, or from something else entirely — and shows the difference using statistics, not assumptions.
 
-# An end-to-end data analytics project that investigates whether a statistically significant, unexplained gender pay gap exists within an organization, after controlling for legitimate business factors such as role, department, education, age, and seniority.
+🔗 **Live app:** https://payequity-ai-fkqnqqebhlappxqp787yjov.streamlit.app/
 
-#  
+---
 
-# \## The Problem
+## The Question
 
-# 
+Pay gap headlines usually report one number: the average difference between what men and women earn. But that single number hides an important distinction.
 
-# Raw pay gaps between genders are often reported at face value, but a raw average difference can be misleading — it may simply reflect that one group is more concentrated in certain roles, departments, or seniority levels, rather than unequal pay for equal work. This project builds a statistically grounded methodology to separate the two, and presents the result through an interactive dashboard aimed at HR leadership.
+There are two very different explanations for a raw pay gap:
 
-# 
+- **Unequal pay** — the same role, the same experience, paid differently.
+- **Unequal representation** — different groups simply concentrated in different roles, at different pay levels.
 
-# \## Dataset
+These two problems need completely different fixes. This project uses regression and statistical testing to work out which one is actually happening.
 
-# 
+---
 
-# \*\*Source:\*\* \[Glassdoor Gender Pay Gap dataset (Kaggle)](https://www.kaggle.com/datasets/nilimajauhari/glassdoor-analyze-gender-pay-gap)
+## Dataset
 
-# 
+**Source:** [Glassdoor Gender Pay Gap dataset](https://www.kaggle.com/datasets/nilimajauhari/glassdoor-analyze-gender-pay-gap) (Kaggle)
 
-# Public, anonymized dataset containing: `JobTitle`, `Gender`, `Age`, `PerfEval`, `Education`, `Dept`, `Seniority`, `BasePay`, `Bonus`. No real individuals are represented.
+- 1,000 employee records
+- 9 features: Gender, Base Pay, Bonus, Age, Seniority, Performance Rating, Education, Department, Job Title
+- Public and fully anonymized — no real individuals involved
+- Clean: no missing values, no placeholder entries
 
-# 
+A privacy rule is also applied throughout the analysis: any group smaller than 5 employees is automatically excluded from department-level results, to avoid indirectly exposing individual pay.
 
-# \## Methodology
+---
 
-# 
+## Method
 
-# The analysis proceeds in layers, each adding more statistical control:
+The analysis moves through five stages, each one adding more control for legitimate factors:
 
-# 
+1. **Raw gap** — simple average difference in pay between genders, no adjustments
+2. **Significance test** — a Welch's t-test to check whether that raw gap is statistically real, or just noise
+3. **Partial regression** — adjusting for age and seniority only
+4. **Full regression** — adjusting for age, seniority, education, department, and job title
+5. **Random Forest cross-check** — a second model used to confirm which factors actually predict pay, as a sanity check on the regression result
 
-# 1\. \*\*Raw Pay Gap\*\* — simple mean difference in `BasePay` between genders, no adjustment.
+Each department is also tested separately, not just the company as a whole, so the conclusion isn't hidden behind an overall average.
 
-# 2\. \*\*Partial Adjustment\*\* — OLS regression controlling only for `Age` and `Seniority`.
+---
 
-# 3\. \*\*Full Adjustment\*\* — OLS regression controlling for `Age`, `Seniority`, `Education`, `Department`, and `Job Title`.
+## What the Data Showed
 
-# 4\. \*\*Robustness Check\*\* — a Random Forest model is trained on the same features to rank which variables most strongly predict `BasePay`, as a cross-check against the linear regression result.
+| Stage | Gap | P-value | Statistically significant? |
+|---|---|---|---|
+| Raw gap | $8,514.73 | 8.72 × 10⁻⁸ | Yes |
+| Adjusted for age + seniority | $10,112.42 | 7.85 × 10⁻²⁴ | Yes |
+| Fully adjusted (+ department, job title, education) | $777.79 | 0.28 | No |
 
-# 5\. \*\*Traffic-Light Risk Scoring\*\* — each result is classified as:
+The gap didn't shrink right away — it grew after the first adjustment. That happened because women in this dataset happened to have slightly better age and seniority profiles on average, which was quietly masking the underlying gap in the raw numbers.
 
-# &#x20;  - 🟢 \*\*Green\*\* — not statistically significant (p ≥ 0.05)
+Once department and job title were added, though, the gap dropped sharply and stopped being statistically significant. In plain terms: once you compare people doing similar work, in similar roles, the pay difference mostly disappears.
 
-# &#x20;  - 🟡 \*\*Amber\*\* — borderline significance (0.05 ≤ p < 0.10)
+This pattern held up separately in every department tested — Operations, Management, Administration, Sales, and Engineering all returned the same result.
 
-# &#x20;  - 🔴 \*\*Red\*\* — statistically significant unexplained gap (p < 0.05)
+**Takeaway:** the raw gap in this dataset looks like it comes from where men and women are concentrated across roles and departments, not from unequal pay for the same job.
 
-# 6\. \*\*Privacy Suppression\*\* — any gender subgroup with fewer than 5 employees is automatically masked in the dashboard, to prevent re-identification in small teams (a k-anonymity style safeguard).
+---
 
-# 
+## Tools Used
 
-# \## Key Findings (full dataset)
+| Purpose | Tools |
+|---|---|
+| Data cleaning & analysis | Python, Pandas, NumPy |
+| Statistics | SciPy, statsmodels |
+| Machine learning cross-check | scikit-learn (Random Forest) |
+| Charts | Plotly |
+| Interactive app | Streamlit |
+| Executive dashboard | Power BI |
 
-# 
+---
 
-# | Stage | Estimated Gap | p-value | Significant? |
+## What's in This Repository
 
-# |---|---|---|---|
+```
+payequity-AI/
+├── Notebook/
+│   └── PE_eda_1.ipynb          full analysis: cleaning, testing, regression
+├── data/
+│   └── Glassdoor_Gender_Pay_Gap.csv
+├── app.py                       Streamlit app (deployed live)
+├── Pay_equity.pbix               Power BI dashboard
+├── requirements.txt
+└── README.md
+```
 
-# | Raw gap | \~$8,514.73 (men higher) | — | — |
+---
 
-# | Adjusted for Age + Seniority only | \~$10,112.41 (men higher) | < 0.001 | Yes |
+## Running It Yourself
 
-# | Fully adjusted (+ Education, Dept, Job Title) | \~$777.79 (men higher) | 0.28 | No |
+```bash
+git clone https://github.com/vkshilpa106-blip/payequity-AI.git
+cd payequity-AI
+pip install -r requirements.txt
+streamlit run app.py
+```
 
-# 
+The app opens at `http://localhost:8501`. Or just use the live version linked at the top of this file.
 
-# \*\*Interpretation:\*\* The raw gap initially appears to widen once age and seniority are controlled for, because women in this dataset have slightly more favorable baseline seniority/age profiles. However, once job title and department are also controlled for, the remaining gap becomes small and not statistically significant.
+---
 
-# 
+## The Streamlit App
 
-# This suggests the raw pay gap in this dataset is better explained by \*representation\* — men are disproportionately concentrated in higher-paying departments and roles — rather than unequal pay for the same role. This is a hypothesis suggested by this specific dataset, not a general claim about pay equity in all organizations.
+The app lets you explore the same analysis interactively:
 
-# 
+- Filter by department and watch every number update
+- See the raw gap, adjusted gap, and significance result side by side
+- A traffic-light status (pass / warning / fail) based on the p-value, not just the raw number
+- A "what-if" simulator estimating the cost of closing part of the pay gap
+- A Random Forest chart showing which factors actually predict pay
+- Export a short audit report as a text file
 
-# \## Tech Stack
+---
 
-# 
+## Limitations, Honestly
 
-# \- \*\*Python\*\* — Pandas, NumPy
+- 1,000 employees is a small sample compared to a real company audit — enough to detect a pattern this size, but not enough to catch smaller, subtler gaps
+- The dataset only has 9 features. Things like performance history over time, negotiation outcomes, or promotion history aren't included, and could tell a different part of the story
+- This shows *association* after controlling for known factors — it doesn't prove cause and effect
+- This is a portfolio project built on public data, not a certified compliance audit
 
-# \- \*\*Statistics\*\* — SciPy, statsmodels (OLS regression, hypothesis testing)
+---
 
-# \- \*\*Machine Learning\*\* — scikit-learn (Random Forest)
+## What I'd Add Next
 
-# \- \*\*Dashboard\*\* — Streamlit
+- A companion tool for quick, ad-hoc questions about the data
+- Plain-language summaries generated automatically per department
+- An always-live cloud version of the dashboard, updated automatically as data changes
 
-# \- \*\*Version control\*\* — Git / GitHub
+---
 
-# 
+## About
 
-# \## How to Run Locally
+Built as a final project for the AI Data Analytics Bootcamp, applying statistics and Python to a real HR analytics question.
 
-# 
-
-# ```bash
-
-# git clone https://github.com/vkshilpa106-blip/payequity-AI.git
-
-# cd payequity-AI
-
-# pip install -r requirements.txt
-
-# streamlit run app.py
-
-# ```
-
-# 
-
-# The app will open at `http://localhost:8501`.
-
-# 
-
-# \## Project Structure
-
-# 
-
-# ```
-
-# payequity-AI/
-
-# ├── data/
-
-# │   └── Glassdoor\_Gender\_Pay\_Gap.csv
-
-# ├── Notebook/
-
-# │   └── 01\_eda.ipynb
-
-# ├── app.py
-
-# ├── requirements.txt
-
-# └── README.md
-
-# ```
-
-# 
-
-# \## Ethical Considerations
-
-# 
-
-# \- This project uses a \*\*public, anonymized dataset\*\* and does not process any real employee data.
-
-# \- Findings describe \*\*statistical association\*\*, not causation — the analysis cannot determine intent or legal liability.
-
-# \- The dashboard suppresses any group smaller than 5 employees to protect against re-identification.
-
-# \- The "AI Executive Summary" in the current version is a \*\*rule-based text template\*\*, not an LLM-generated output. This is disclosed transparently in the app itself.
-
-# 
-
-# \## MVP vs. Planned Extensions
-
-# 
-
-# \*\*Delivered (MVP):\*\*
-
-# \- Cleaned dataset, EDA
-
-# \- Raw and adjusted pay gap analysis via OLS regression
-
-# \- Random Forest robustness check
-
-# \- Traffic-light significance scoring
-
-# \- Interactive Streamlit dashboard with department-level filtering
-
-# \- Privacy suppression for small subgroups
-
-# 
-
-# \*\*Planned for Version 2:\*\*
-
-# \- SQL backend (structured Employees/Salaries tables with real queries)
-
-# \- Additional ML model comparison (e.g. Gradient Boosting)
-
-# \- Real LLM-generated plain-language executive summaries
-
-# \- Power BI executive dashboard
-
-# \- Cloud deployment
-
-# 
-
-# \## Author
-
-# Shilpa VK
-
-# Built as a final project for IRONHACK, applying Python, statistics, and machine learning to a real-world HR analytics problem.
-
+**Shilpa Vellore Krishnmurthy**
