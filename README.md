@@ -4,7 +4,7 @@
 
 # An end-to-end data analytics project that investigates whether a statistically significant, unexplained gender pay gap exists within an organization, after controlling for legitimate business factors such as role, department, education, age, and seniority.
 
-# 
+#  
 
 # \## The Problem
 
@@ -192,7 +192,7 @@
 
 # \## Author
 
-# 
+# Shilpa VK
 
-# Built as a final project for \[Bootcamp Name], applying Python, statistics, and machine learning to a real-world HR analytics problem.
+# Built as a final project for IRONHACK, applying Python, statistics, and machine learning to a real-world HR analytics problem.
 
